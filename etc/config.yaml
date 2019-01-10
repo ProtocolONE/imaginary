@@ -1,4 +1,5 @@
 Minio:
   Endpoint: "http://protocol.one/"
-  AccessKey: "test"
-  
+  AccessKey: test
+  SecretKey: test
+  Bucket: /mnt/bucket
