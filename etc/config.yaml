@@ -1,0 +1,4 @@
+Minio:
+  Endpoint: "http://protocol.one/"
+  AccessKey: "test"
+  
