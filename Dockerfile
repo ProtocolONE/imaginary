@@ -87,10 +87,14 @@ RUN \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+WORKDIR /application
+
 COPY --from=builder /usr/local/lib /usr/local/lib
 RUN ldconfig
-COPY --from=builder /go/bin/imaginary bin/
+COPY --from=builder /go/bin/imaginary /application/bin/
 COPY --from=builder /etc/ssl/certs /etc/ssl/certs
+
+COPY etc/config.yaml /application/etc/
 
 # Server port to listen
 ENV PORT 9000
