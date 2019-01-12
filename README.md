@@ -4,7 +4,12 @@ For authenticate user using JWT.
 
 Before start set configs for Minio and JWT in etc/confgi.yaml
 
+### Example
 
+Resize image to 500x400px, convert to PNG, validate JWT access token and upload into `dest` (images):
+```
+curl -F "file=@path/to/image.jpg" http://localhost:8088/resize?width=500&height=400&type=png&dest=images -H "Authorization: Bearer Ym9zY236Ym9zY28="
+```
 
 # imaginary [![Build Status](https://travis-ci.org/h2non/imaginary.png)](https://travis-ci.org/h2non/imaginary) [![Docker](https://img.shields.io/badge/docker-h2non/imaginary-blue.svg)](https://hub.docker.com/r/h2non/imaginary/) [![Docker Registry](https://img.shields.io/docker/pulls/h2non/imaginary.svg)](https://hub.docker.com/r/h2non/imaginary/) [![Go Report Card](http://goreportcard.com/badge/h2non/imaginary)](http://goreportcard.com/report/h2non/imaginary) ![ImageLayers](https://badge.imagelayers.io/h2non/imaginary.svg)
 
@@ -520,6 +525,7 @@ If you're pushing images to `imaginary` as `multipart/form-data` (you can do it 
 Complete list of available params. Take a look to each specific endpoint to see which params are supported.
 Image measures are always in pixels, unless otherwise indicated.
 
+- **dest**        `string`- Minio destination directory (default: images)
 - **width**       `int`   - Width of image area to extract/resize
 - **height**      `int`   - Height of image area to extract/resize
 - **top**         `int`   - Top edge of area to extract. Example: `100`
