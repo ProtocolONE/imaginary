@@ -10,7 +10,24 @@ import (
 	"time"
 )
 
+type MinioOptions struct {
+	Endpoint            string
+	AccessKey           string
+	SecretKey           string
+	Bucket              string
+	UseSSL              bool
+}
+
+type JwtOptions struct {
+	SignatureSecret       []byte
+	SignatureSecretBase64 string
+	Algorithm             string
+}
+
 type ServerOptions struct {
+	Minio              MinioOptions
+	Jwt                JwtOptions
+
 	Port               int
 	Burst              int
 	Concurrency        int

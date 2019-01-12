@@ -64,6 +64,9 @@ WORKDIR $GOPATH
 # Fetch the latest version of the package
 RUN go get -u golang.org/x/net/context
 RUN go get -u github.com/golang/dep/cmd/dep
+RUN go get -u github.com/dgrijalva/jwt-go
+RUN go get -u github.com/minio/minio-go
+RUN go get -u github.com/spf13/viper
 
 # Copy imaginary sources
 COPY . $GOPATH/src/github.com/h2non/imaginary
@@ -91,6 +94,7 @@ COPY --from=builder /usr/local/lib /usr/local/lib
 RUN ldconfig
 COPY --from=builder /go/bin/imaginary bin/
 COPY --from=builder /etc/ssl/certs /etc/ssl/certs
+COPY ./etc/*.yaml /etc/
 
 # Server port to listen
 ENV PORT 9000

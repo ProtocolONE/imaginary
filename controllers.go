@@ -1,15 +1,17 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"mime"
 	"net/http"
-	"strconv"
+	"path/filepath"
 	"strings"
 
 	"gopkg.in/h2non/bimg.v1"
 	"gopkg.in/h2non/filetype.v0"
+	"github.com/minio/minio-go"
 )
 
 func indexController(w http.ResponseWriter, r *http.Request) {
@@ -68,6 +70,28 @@ func determineAcceptMimeType(accept string) string {
 	return ""
 }
 
+
+func UploadMinio(img *Image, fileName string, opts *MinioOptions) (publicUrl string, err error){
+	// Initialize minio client object.
+	minioClient, err := minio.New(opts.Endpoint, opts.AccessKey, opts.SecretKey, opts.UseSSL)
+	if err != nil {
+		exitWithError("Failed to initialize Minio: %s", err)
+		return
+	}
+
+	reador := bytes.NewReader(img.Body)
+
+	_, err = minioClient.PutObject(opts.Bucket, fileName, reador, reador.Size(), minio.PutObjectOptions{ContentType: img.Mime})
+	if err != nil {
+		exitWithError("Eror while PutObject: %s", err)
+		return
+	}
+
+	publicUrl = fmt.Sprintf("https://%s/%s/%s", opts.Endpoint, opts.Bucket, fileName)
+
+	return
+}
+
 func imageHandler(w http.ResponseWriter, r *http.Request, buf []byte, Operation Operation, o ServerOptions) {
 	// Infer the body MIME type via mime sniff algorithm
 	mimeType := http.DetectContentType(buf)
@@ -109,13 +133,34 @@ func imageHandler(w http.ResponseWriter, r *http.Request, buf []byte, Operation 
 		return
 	}
 
-	// Expose Content-Length response header
-	w.Header().Set("Content-Length", strconv.Itoa(len(image.Body)))
-	w.Header().Set("Content-Type", image.Mime)
+	_, handler, _ := r.FormFile(formFieldName)
+
+	destPath := "images"
+	if vs := r.Form["dest"]; len(vs) > 0 {
+		destPath = vs[0]
+	}
+	fileName := handler.Filename
+	if destPath != "" {
+		fileName = fmt.Sprintf("%s/%s", destPath, handler.Filename)
+	}
+
+	if vs := r.Form["type"]; len(vs) > 0 && vs[0] != "" {
+		ext := vs[0]
+		oldExt := filepath.Ext(fileName)
+		fileName = fileName[:len(fileName) - len(oldExt) + 1] + ext
+	}
+
+	publicUrl, err := UploadMinio(&image, fileName, &o.Minio)
+	if err != nil {
+		ErrorReply(r, w, NewError("Error while upload to Minio: "+err.Error(), BadRequest), o)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
 	if vary != "" {
 		w.Header().Set("Vary", vary)
 	}
-	_, _ = w.Write(image.Body)
+	_, _ = w.Write([]byte(publicUrl))
 }
 
 func formController(w http.ResponseWriter, r *http.Request) {

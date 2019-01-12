@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"net/http"
 	"strings"
 	"time"
@@ -32,6 +33,9 @@ func Middleware(fn func(http.ResponseWriter, *http.Request), o ServerOptions) ht
 	}
 	if o.HTTPCacheTTL >= 0 {
 		next = setCacheHeaders(next, o.HTTPCacheTTL)
+	}
+	if len(o.Jwt.SignatureSecret) > 0 {
+		next = validateJWT(next, o)
 	}
 
 	return validate(defaultHeaders(next), o)
@@ -184,6 +188,38 @@ func validateURLSignature(next http.Handler, o ServerOptions) http.Handler {
 
 		if hmac.Equal(urlSign, expectedSign) == false {
 			ErrorReply(r, w, ErrURLSignatureMismatch, o)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func validateJWT(next http.Handler, o ServerOptions) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		auth := r.Header.Get("Authorization")
+		tokenJwt := ""
+		if auth != "" {
+			authArr := strings.Split(auth, " ")
+			if len(authArr) != 2 || authArr[0] != "Bearer" {
+				ErrorReply(r, w, ErrInvalidJWT, o)
+				return
+			}
+			tokenJwt = authArr[1]
+		} else {
+			query := r.URL.Query()
+			tokenJwt = query.Get("jwt")
+		}
+
+		keyFunc := func (t *jwt.Token) (interface{}, error) {
+			if t.Method.Alg() != o.Jwt.Algorithm {
+				return nil, fmt.Errorf("unexpected jwt signing method=%v", t.Header["alg"])
+			}
+			return o.Jwt.SignatureSecret, nil
+		}
+		token, err := jwt.Parse(tokenJwt, keyFunc)
+		if err != nil || !token.Valid {
+			ErrorReply(r, w, ErrInvalidJWT, o)
 			return
 		}
 

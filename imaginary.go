@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -14,9 +15,12 @@ import (
 	"time"
 
 	bimg "gopkg.in/h2non/bimg.v1"
+	"github.com/spf13/viper"
 )
 
 var (
+	aConfigFile         = flag.String("c", "config.yaml", "Config file")
+
 	aAddr               = flag.String("a", "", "Bind address")
 	aPort               = flag.Int("p", 8088, "Port to listen")
 	aVers               = flag.Bool("v", false, "Show version")
@@ -68,6 +72,8 @@ Usage:
   imaginary -v | -version
 
 Options:
+  -c <config.yaml>          Config for Minio
+
   -a <addr>                 Bind address [default: *]
   -p <port>                 Bind port [default: 8088]
   -h, -help                 Show help
@@ -101,6 +107,38 @@ Options:
 
 type URLSignature struct {
 	Key string
+}
+
+func LoadConfig(opts *ServerOptions) error {
+	if *aConfigFile != "" {
+		viper.SetConfigFile(*aConfigFile)
+	} else {
+		viper.SetConfigName("config")
+		viper.AddConfigPath("./")
+		viper.AddConfigPath("$HOME")
+		viper.AddConfigPath("./etc")
+	}
+
+	if err := viper.ReadInConfig(); err != nil {
+		exitWithError("Read config error: %s", err)
+	}
+
+	if err := viper.Unmarshal(opts); err != nil {
+		exitWithError("Cannot to decode config: %s", err)
+	}
+
+	if opts.Jwt.SignatureSecretBase64 != "" {
+		if opts.Jwt.Algorithm == "" {
+			opts.Jwt.Algorithm = "HS256"
+		}
+		pemKey, err := base64.StdEncoding.DecodeString(opts.Jwt.SignatureSecretBase64)
+		if err != nil {
+			exitWithError("URL signature key must be a minimum of 32 characters")
+		}
+		opts.Jwt.SignatureSecret = pemKey
+	}
+
+	return nil
 }
 
 func main() {
@@ -146,6 +184,8 @@ func main() {
 		AllowedOrigins:     parseOrigins(*aAllowedOrigins),
 		MaxAllowedSize:     *aMaxAllowedSize,
 	}
+
+	LoadConfig(&opts)
 
 	// Show warning if gzip flag is passed
 	if *aGzip {

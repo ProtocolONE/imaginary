@@ -2,10 +2,16 @@ version: "3"
 
 services:
   imaginary:
-    image: h2non/imaginary
+    build: .
+    volumes:
+      - images:/mnt/data
     ports:
-      - "8088:8088"
+      - "9000:9000"
     environment:
-      - PORT=8088
-    command: -concurrency 50 -enable-url-source
+        PORT: 9000
+        DEBUG: "*"
+    command: -enable-url-source -mount /mnt/data -cors -concurrency 10 -max-allowed-size 10485760 -c /etc/local.yaml
+volumes:
+  images:
+    external: true
 

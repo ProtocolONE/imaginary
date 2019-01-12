@@ -36,6 +36,7 @@ var (
 	ErrNotImplemented       = NewError("not implemented endpoint", NotImplemented)
 	ErrInvalidURLSignature  = NewError("invalid URL signature", BadRequest)
 	ErrURLSignatureMismatch = NewError("URL signature mismatch", Forbidden)
+	ErrInvalidJWT           = NewError("invalid or missing JWT token", Unauthorized)
 )
 
 type Error struct {
