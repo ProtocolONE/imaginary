@@ -8,7 +8,8 @@ Before start set configs for Minio and JWT in etc/confgi.yaml
 
 Resize image to 500x400px, convert to PNG, validate JWT access token and upload into `dest` (images):
 ```
-curl -F "file=@path/to/image.jpg" http://localhost:8088/resize?width=500&height=400&type=png&dest=images -H "Authorization: Bearer Ym9zY236Ym9zY28="
+curl -F "file=@path/to/file.jpg" http://localhost:8088/resize?width=500&height=400&type=png&dest=images -H "Authorization: Bearer Ym9zY236Ym9zY28="
+> https://s3.superstorage.com/bucket/images/file.png
 ```
 
 # imaginary [![Build Status](https://travis-ci.org/h2non/imaginary.png)](https://travis-ci.org/h2non/imaginary) [![Docker](https://img.shields.io/badge/docker-h2non/imaginary-blue.svg)](https://hub.docker.com/r/h2non/imaginary/) [![Docker Registry](https://img.shields.io/docker/pulls/h2non/imaginary.svg)](https://hub.docker.com/r/h2non/imaginary/) [![Go Report Card](http://goreportcard.com/badge/h2non/imaginary)](http://goreportcard.com/report/h2non/imaginary) ![ImageLayers](https://badge.imagelayers.io/h2non/imaginary.svg)
