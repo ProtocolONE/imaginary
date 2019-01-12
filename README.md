@@ -1,3 +1,11 @@
+This application using Minio to securely upload a post processed images into a high performance storage and return a url for public usage.
+
+For authenticate user using JWT.
+
+Before start set configs for Minio and JWT in etc/confgi.yaml
+
+
+
 # imaginary [![Build Status](https://travis-ci.org/h2non/imaginary.png)](https://travis-ci.org/h2non/imaginary) [![Docker](https://img.shields.io/badge/docker-h2non/imaginary-blue.svg)](https://hub.docker.com/r/h2non/imaginary/) [![Docker Registry](https://img.shields.io/docker/pulls/h2non/imaginary.svg)](https://hub.docker.com/r/h2non/imaginary/) [![Go Report Card](http://goreportcard.com/badge/h2non/imaginary)](http://goreportcard.com/report/h2non/imaginary) ![ImageLayers](https://badge.imagelayers.io/h2non/imaginary.svg)
 
 **[Fast](#benchmarks) HTTP [microservice](http://microservices.io/patterns/microservices.html)** written in Go **for high-level image processing** backed by [bimg](https://github.com/h2non/bimg) and [libvips](https://github.com/jcupitt/libvips). `imaginary` can be used as private or public HTTP service for massive image processing with first-class support for [Docker](#docker) & [Heroku](#heroku).
@@ -298,6 +306,7 @@ Usage:
   imaginary -v | -version
 
 Options:
+  -c <path>                 Path to config.yaml [default: ./etc/config.yaml]
   -a <addr>                 Bind address [default: *]
   -p <port>                 Bind port [default: 8088]
   -h, -help                 Show help
