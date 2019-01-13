@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"mime"
 	"net/http"
 	"path/filepath"
+	"crypto/md5"
 	"strings"
 
 	"gopkg.in/h2non/bimg.v1"
@@ -144,11 +146,24 @@ func imageHandler(w http.ResponseWriter, r *http.Request, buf []byte, Operation 
 		fileName = fmt.Sprintf("%s/%s", destPath, handler.Filename)
 	}
 
-	if vs := r.Form["type"]; len(vs) > 0 && vs[0] != "" {
-		ext := vs[0]
-		oldExt := filepath.Ext(fileName)
-		fileName = fileName[:len(fileName) - len(oldExt) + 1] + ext
+	query := r.URL.Query()
+	query.Del("type")
+	query.Del("quality")
+	query.Del("sign")
+	query.Del("jwt")
+	hash := ""
+	if len(query) > 0 {
+		hasher := md5.New()
+		io.WriteString(hasher, query.Encode())
+		hash = fmt.Sprintf("-%x", hasher.Sum(nil))[:6]
 	}
+
+	oldExt := filepath.Ext(fileName)
+	newExt := oldExt
+	if vs := r.Form["type"]; len(vs) > 0 && vs[0] != "" {
+		newExt = "." + vs[0]
+	}
+	fileName = fileName[:len(fileName) - len(oldExt)] + hash + newExt
 
 	publicUrl, err := UploadMinio(&image, fileName, &o.Minio)
 	if err != nil {
