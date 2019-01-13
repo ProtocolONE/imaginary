@@ -104,7 +104,7 @@ COPY etc/config.yaml /application/etc/
 ENV PORT 9000
 
 # Run the entrypoint command by default when the container starts.
-ENTRYPOINT ["./imaginary"]
+ENTRYPOINT ["/application/imaginary"]
 
 # Expose the server TCP port
 EXPOSE 9000
