@@ -94,9 +94,9 @@ WORKDIR /application
 
 COPY --from=builder /usr/local/lib /usr/local/lib
 RUN ldconfig
-COPY --from=builder /go/bin/imaginary /application/bin/
+COPY --from=builder /go/bin/imaginary /application/
 COPY --from=builder /etc/ssl/certs /etc/ssl/certs
-COPY ./etc/*.yaml /etc/
+COPY ./etc/*.yaml /application/etc/
 
 COPY etc/config.yaml /application/etc/
 
@@ -104,7 +104,7 @@ COPY etc/config.yaml /application/etc/
 ENV PORT 9000
 
 # Run the entrypoint command by default when the container starts.
-ENTRYPOINT ["bin/imaginary"]
+ENTRYPOINT ["imaginary"]
 
 # Expose the server TCP port
 EXPOSE 9000
