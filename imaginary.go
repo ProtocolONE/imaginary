@@ -138,6 +138,12 @@ func LoadConfig(opts *ServerOptions) error {
 		opts.Jwt.SignatureSecret = pemKey
 	}
 
+	if opts.Minio.Endpoint != "" {
+		opts.Minio.Endpoint = strings.Replace(opts.Minio.Endpoint, "http:", "", -1)
+		opts.Minio.Endpoint = strings.Replace(opts.Minio.Endpoint, "https:", "", -1)
+		opts.Minio.Endpoint = strings.Replace(opts.Minio.Endpoint, "/", "", -1)
+	}
+
 	return nil
 }
 
