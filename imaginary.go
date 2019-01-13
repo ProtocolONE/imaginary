@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	aConfigFile         = flag.String("c", "config.yaml", "Config file")
+	aConfigFile         = flag.String("c", "", "Config file")
 
 	aAddr               = flag.String("a", "", "Bind address")
 	aPort               = flag.Int("p", 8088, "Port to listen")
