@@ -10,7 +10,7 @@ services:
     environment:
         PORT: 9000
         DEBUG: "*"
-    command: -enable-url-source -mount /mnt/data -cors -concurrency 10 -max-allowed-size 10485760 -c /application/etc/local.yaml
+    command: -enable-url-source -mount /mnt/data -concurrency 10 -max-allowed-size 10485760 -c /application/etc/local.yaml
 volumes:
   images:
     external: true

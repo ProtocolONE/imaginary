@@ -24,9 +24,14 @@ type JwtOptions struct {
 	Algorithm             string
 }
 
+type CORS struct {
+	AllowOrigin   string
+}
+
 type ServerOptions struct {
 	Minio              MinioOptions
 	Jwt                JwtOptions
+	CORS               CORS
 
 	Port               int
 	Burst              int
@@ -35,7 +40,6 @@ type ServerOptions struct {
 	HTTPReadTimeout    int
 	HTTPWriteTimeout   int
 	MaxAllowedSize     int
-	CORS               bool
 	Gzip               bool // deprecated
 	AuthForwarding     bool
 	EnableURLSource    bool
