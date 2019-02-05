@@ -142,6 +142,10 @@ func LoadConfig(opts *ServerOptions) error {
 		opts.Minio.Endpoint = strings.Replace(opts.Minio.Endpoint, "/", "", -1)
 	}
 
+	if opts.Video.TempDir == "" {
+		opts.Video.TempDir = "/tmp"
+	}
+
 	return nil
 }
 

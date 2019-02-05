@@ -1,10 +1,14 @@
 package main
 
 import (
+	"fmt"
+	"github.com/minio/minio-go"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -28,10 +32,15 @@ type CORS struct {
 	AllowOrigin   string
 }
 
+type Video struct {
+	TempDir       string
+}
+
 type ServerOptions struct {
 	Minio              MinioOptions
 	Jwt                JwtOptions
 	CORS               CORS
+	Video              Video
 
 	Port               int
 	Burst              int
@@ -86,6 +95,8 @@ func Server(o ServerOptions) error {
 		WriteTimeout:   time.Duration(o.HTTPWriteTimeout) * time.Second,
 	}
 
+	rand.Seed(time.Now().UnixNano())
+
 	return listenAndServe(server, o)
 }
 
@@ -127,5 +138,71 @@ func NewServerMux(o ServerOptions) http.Handler {
 	mux.Handle(join(o, "/blur"), image(GaussianBlur))
 	mux.Handle(join(o, "/pipeline"), image(Pipeline))
 
+	video := VideoMiddleware{o}
+	mux.Handle(join(o, "/video"), validate(validateJWT(&video, o), o))
+
 	return mux
+}
+
+type VideoMiddleware struct {
+	opts ServerOptions
+}
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func RandStringRunes(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
+
+func (m *VideoMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	// Initialize minio client object.
+	opts := m.opts.Minio
+	minioClient, err := minio.New(opts.Endpoint, opts.AccessKey, opts.SecretKey, opts.UseSSL)
+	if err != nil {
+		fmt.Printf("Failed to initialize Minio: %s", err)
+		return
+	}
+
+	videoFile, header, err := r.FormFile("file")
+	if err != nil {
+		fmt.Printf("Invalid format: %s", err)
+		return
+	}
+
+	contentType := header.Header.Get("Content-Type")
+
+	destPath := "videos"
+	if vs := r.Form["dest"]; len(vs) > 0 {
+		destPath = vs[0]
+	}
+	fileName := header.Filename
+	if destPath != "" {
+		fileName = fmt.Sprintf("%s/%s", destPath, fileName)
+	}
+
+	hash := "-" + RandStringRunes(6)
+	oldExt := filepath.Ext(fileName)
+	newExt := oldExt
+	if vs := r.Form["type"]; len(vs) > 0 && vs[0] != "" {
+		newExt = "." + vs[0]
+	}
+	fileName = fileName[:len(fileName) - len(oldExt)] + hash + newExt
+
+	_, err = minioClient.PutObject(opts.Bucket, fileName, videoFile, header.Size, minio.PutObjectOptions{ContentType: contentType})
+	if err != nil {
+		fmt.Printf("Eror while PutObject: %s", err)
+		return
+	}
+
+	publicUrl := fmt.Sprintf(`https://%s/%s/%s`, opts.Endpoint, opts.Bucket, fileName)
+
+	w.Header().Set("Content-Type", "text/html")
+	_, _ = w.Write([]byte(publicUrl))
+
+	return
 }
