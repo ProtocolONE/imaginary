@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rs/cors"
 	"gopkg.in/h2non/bimg.v1"
 	"gopkg.in/throttled/throttled.v2"
 	"gopkg.in/throttled/throttled.v2/store/memstore"
@@ -24,9 +23,6 @@ func Middleware(fn func(http.ResponseWriter, *http.Request), o ServerOptions) ht
 	}
 	if o.Concurrency > 0 {
 		next = throttle(next, o)
-	}
-	if o.CORS {
-		next = cors.Default().Handler(next)
 	}
 	if o.APIKey != "" {
 		next = authorizeClient(next, o)
@@ -91,11 +87,20 @@ func throttle(next http.Handler, o ServerOptions) http.Handler {
 
 func validate(next http.Handler, o ServerOptions) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if o.CORS.AllowOrigin != "" {
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+			w.Header().Set("Access-Control-Allow-Headers", "authorization,content-type")
+			w.Header().Set("Access-Control-Allow-Methods", "GET,HEAD,POST")
+			w.Header().Set("Access-Control-Allow-Origin", o.CORS.AllowOrigin)
+		}
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
 		if r.Method != http.MethodGet && r.Method != http.MethodPost {
 			ErrorReply(r, w, ErrMethodNotAllowed, o)
 			return
 		}
-
 		next.ServeHTTP(w, r)
 	})
 }

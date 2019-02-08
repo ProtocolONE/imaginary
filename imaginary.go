@@ -57,7 +57,6 @@ const usage = `imaginary %s
 
 Usage:
   imaginary -p 80
-  imaginary -cors
   imaginary -concurrency 10
   imaginary -path-prefix /api/v1
   imaginary -enable-url-source
@@ -79,7 +78,6 @@ Options:
   -h, -help                 Show help
   -v, -version              Show version
   -path-prefix <value>      Url path prefix to listen to [default: "/"]
-  -cors                     Enable CORS support [default: false]
   -gzip                     Enable gzip compression (deprecated) [default: false]
   -disable-endpoints        Comma separated endpoints to disable. E.g: form,crop,rotate,health [default: ""]
   -key <key>                Define API key for authorization
@@ -144,6 +142,10 @@ func LoadConfig(opts *ServerOptions) error {
 		opts.Minio.Endpoint = strings.Replace(opts.Minio.Endpoint, "/", "", -1)
 	}
 
+	if opts.Video.TempDir == "" {
+		opts.Video.TempDir = "/tmp"
+	}
+
 	return nil
 }
 
@@ -169,7 +171,6 @@ func main() {
 	opts := ServerOptions{
 		Port:               port,
 		Address:            *aAddr,
-		CORS:               *aCors,
 		AuthForwarding:     *aAuthForwarding,
 		EnableURLSource:    *aEnableURLSource,
 		EnablePlaceholder:  *aEnablePlaceholder,
