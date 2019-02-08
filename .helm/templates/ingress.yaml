@@ -15,6 +15,7 @@ metadata:
     ingress.kubernetes.io/ssl-redirect: "true"
     kubernetes.io/tls-acme: "true"
     nginx.ingress.kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "600m"
 spec:
   tls:
   - hosts: 
