@@ -10,9 +10,9 @@ ingress:
 certIssuer:
   email: admin@protocol.one
 
-frontend:
+backend:
   name: imaginary
-  role: frontend
+  role: backend
   image: "p1hub/qilin.api"
   imageTag: latest
   port: 9000
