@@ -79,6 +79,7 @@ deploy:
     p1hub/p1jenkinstrigger
   on:
     branch: master
+    condition: $LIBVIPS = master
 
 notifications:
   slack:
