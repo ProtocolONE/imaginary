@@ -68,6 +68,14 @@ before_install:
   - sudo make install
   - sudo ldconfig
 
+install:
+ - go get -u golang.org/x/net/context
+ - go get -u github.com/golang/dep/cmd/dep
+ - go get -u github.com/dgrijalva/jwt-go
+ - go get -u github.com/minio/minio-go
+ - go get -u github.com/spf13/viper
+
+
 script:
   - cd ..
   - go test -v -race -covermode=atomic
