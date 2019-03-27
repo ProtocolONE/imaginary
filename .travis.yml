@@ -5,27 +5,27 @@ dist: trusty
 
 go:
   - "1.11.x"
-  - "1.10.x"
-  - "1.9.x"
-  - "tip"
+#  - "1.10.x"
+#  - "1.9.x"
+#  - "tip"
 
 env:
-- LIBVIPS=7.42
-- LIBVIPS=8.2
-- LIBVIPS=8.3
-- LIBVIPS=8.4
-- LIBVIPS=8.5
-- LIBVIPS=8.6
+#- LIBVIPS=7.42
+#- LIBVIPS=8.2
+#- LIBVIPS=8.3
+#- LIBVIPS=8.4
+#- LIBVIPS=8.5
+#- LIBVIPS=8.6
 - LIBVIPS=8.7
-- LIBVIPS=master
+#- LIBVIPS=master
 
-matrix:
-  allow_failures:
-  - env: LIBVIPS=7.42
-  - env: LIBVIPS=8.2
-  - env: LIBVIPS=8.3
-  - env: LIBVIPS=master
-  - go: 1.8.x
+#matrix:
+#  allow_failures:
+#  - env: LIBVIPS=7.42
+#  - env: LIBVIPS=8.2
+#  - env: LIBVIPS=8.3
+#  - env: LIBVIPS=master
+#  - go: 1.8.x
 
 cache: apt
 
@@ -79,7 +79,7 @@ deploy:
     p1hub/p1jenkinstrigger
   on:
     branch: master
-    condition: $LIBVIPS = master
+    condition: $LIBVIPS = "8.7"
     go: "1.11.x"
 
 notifications:
